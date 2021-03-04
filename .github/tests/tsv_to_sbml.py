@@ -86,7 +86,7 @@ NS_MAP = {
     "xhtml": "http://www.w3.org/1999/xhtml",
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     "dc": "http://purl.org/dc/elements/1.1/",
-    "vCard": "http://www.w3.org/2001/vcard-rdf/3.0#",
+    "vCard": "urn:ietf:params:xml:ns:vcard-4.0",
     "dcterms": "http://purl.org/dc/terms/",
     "bqbiol": "http://biomodels.net/biology-qualifiers/",
     None: "http://www.sbml.org/sbml/level3/version1/core",
@@ -147,37 +147,35 @@ model_annotation_RDF_description_DC_bag = etree.SubElement(
         ),
         "{%s}" % NS_MAP["dc"] + "creator",
     ),
-    "{%s}" % NS_MAP["rdf"] + "Bag",
+    "{%s}" % NS_MAP["vCard"] + "vcards",
 )
 
 for key, val in compiler.tables.get("Curator").data.items():
-    rdf_li = etree.SubElement(
+    vCard = etree.SubElement(
         model_annotation_RDF_description_DC_bag,
-        "{%s}" % NS_MAP["rdf"] + "li",
+        "{%s}" % NS_MAP["vCard"] + "vcard",
         attrib={
             "{%s}" % NS_MAP["rdf"] + "about": key,
             "{%s}" % NS_MAP["rdf"] + "parseType": "Resource",
         },
     )
+    etree.SubElement(vCard, "{%s}" % NS_MAP["vCard"] + "fn").text = val["!GivenName"] + " " + val["!Surname"]
     vCard_N = etree.SubElement(
-        rdf_li,
-        "{%s}" % NS_MAP["vCard"] + "N",
+        vCard,
+        "{%s}" % NS_MAP["vCard"] + "n",
         attrib={"{%s}" % NS_MAP["rdf"] + "parseType": "Resource"},
     )
-    etree.SubElement(vCard_N, "{%s}" % NS_MAP["vCard"] + "Family").text = val[
-        "!family-name"
+    etree.SubElement(vCard_N, "{%s}" % NS_MAP["vCard"] + "surname").text = val[
+        "!Surname"
     ]
-    etree.SubElement(vCard_N, "{%s}" % NS_MAP["vCard"] + "Given").text = val[
-        "!given-name"
+    etree.SubElement(vCard_N, "{%s}" % NS_MAP["vCard"] + "given").text = val[
+        "!GivenName"
     ]
-    etree.SubElement(rdf_li, "{%s}" % NS_MAP["vCard"] + "EMAIL").text = val["!email"]
-    vCard_ORG = etree.SubElement(
-        rdf_li,
-        "{%s}" % NS_MAP["vCard"] + "ORG",
-        attrib={"{%s}" % NS_MAP["rdf"] + "parseType": "Resource"},
-    )
-    etree.SubElement(vCard_ORG, "{%s}" % NS_MAP["vCard"] + "Orgname").text = val[
-        "!organization-name"
+
+    etree.SubElement(vCard, "{%s}" % NS_MAP["vCard"] + "email").text = val["!Email"]
+
+    etree.SubElement(vCard, "{%s}" % NS_MAP["vCard"] + "org").text = val[
+        "!OrganizationName"
     ]
 
 

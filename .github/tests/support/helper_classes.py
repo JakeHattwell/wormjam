@@ -1,3 +1,8 @@
+# This code is taken from an old project of mine (Jake Hattwell)
+# and can probably be cleaned up/optimized at some point
+# For now though, it gets the job done fast enough that enhancements
+# would be purely cosmetic.
+
 import os
 import csv
 
