@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 from string import Template
 import sys
-
+import traceback
 from lxml import etree
 
 # debugging
@@ -83,22 +83,26 @@ def pull_db_refs_from_sbml(dbs,entity):
 		if "!Identifier" in i:
 			ref = entity.xpath(".//dc:identifier[@dc:title='%s']"% search_term,namespaces=nsmap)
 			if len(ref):
-				ref = ref[0].attrib["{%s}subject" % nsmap["dc"]]
+				ref = "|".join([i.attrib["{%s}subject" % nsmap["dc"]] for i in ref])
 			else:
 				ref = ""
 		elif "!Notes" in i:
 			ref = [note for note in notes if search_term == note.split(": ")[0]]
 			if len(ref):
-				ref = ref[0].split(": ")[1]
+				ref = "|".join([i.split(": ")[1] for i in ref])
 			else:
 				ref = ""
 		else:
 			print("WARNING:",i,"is poorly labelled - missing !Identifier or !Notes")
 			ref = ""
 		data.append(ref)
-	comments = [note for note in notes if "Comment" == note.split(": ")[0]][0].split(": ")[1]
-	curator = [note for note in notes if "Curator" == note.split(": ")[0]][0].split(": ")[1]
-	data.extend([comments,curator])
+	comments = [note for note in notes if "Comment" == note.split(": ")[0]]
+	curator = [note for note in notes if "Curator" == note.split(": ")[0]]
+	for i in [comments,curator]:
+		if len(i):
+			data.append(i[0].split(": ")[1])
+		else:
+			data.append("")
 	return data
 
 # load the file most likely to be the SBML model
@@ -162,25 +166,20 @@ try:
 	if len(genes):
 		SBtab_header = SBtabHeaderTemplate.substitute(TableID="compound",TableType="Gene",TableName="Genes")
 		dbs = generate_headers(genes)
-		headers = ["!ID","!Name","!Location","!Charge","!Formula","!IsConstant","!SBOTerm","!InitialConcentration","!hasOnlySubstanceUnits"] + dbs + ["!Curator","!Comments"]
+		headers = ["!ID","!Symbol","!LocusName","!Name"] + dbs + ["!Curator","!Comments"]
 		with open(OUTPUT_LOCATION/"Gene-SBtab.tsv","w+",newline="") as f:
 			gene_tsv = csv.writer(f,delimiter="\t")
 			gene_tsv.writerow([SBtab_header])
 			gene_tsv.writerow(headers)
 			children = genes.xpath("./*[not(self::sbml:notes)]",namespaces=nsmap)
-			for species in children:
+			for gene in children:
 				data = [
-					species.attrib["metaid"],
-					species.attrib["name"],
-					species.attrib["compartment"],
-					species.attrib["{%s}charge"%nsmap["fbc"]],
-					species.attrib["{%s}chemicalFormula"%nsmap["fbc"]],
-					species.attrib["constant"],
-					species.attrib["sboTerm"],
-					species.attrib["initialConcentration"],
-					species.attrib["hasOnlySubstanceUnits"]
+					gene.attrib["metaid"],
+					gene.attrib["{%s}name"%nsmap["fbc"]].split("@")[0],
+					gene.attrib["{%s}name"%nsmap["fbc"]].split("@")[1].split("|")[0],
+					gene.attrib["{%s}name"%nsmap["fbc"]].split("|")[1]
 					]
-				data.extend(pull_db_refs_from_sbml(dbs,species))
+				data.extend(pull_db_refs_from_sbml(dbs,gene))
 				gene_tsv.writerow(data)
 	print("COMPLETE: Genes")
 except Exception as e:
@@ -210,6 +209,7 @@ try:
 				compartment_tsv.writerow(data)
 	print("COMPLETE: Compartments")
 except Exception as e:
+	traceback.print_exc(e)
 	sys.exit("ERROR: Processing Compartments\n"+str(e))
 
 # COMPOUND

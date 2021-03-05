@@ -195,7 +195,7 @@ for key, val in compiler.tables.get("Gene").data.items():
             "{%s}" % NS_MAP["fbc"] + "id": "G_" + key,
             "{%s}" % NS_MAP["fbc"] + "label": key,
             "sboTerm": val.get("!SBOTerm",""),
-            "{%s}" % NS_MAP["fbc"] + "name": val["!LocusName"],
+            "{%s}" % NS_MAP["fbc"] + "name": val["!Symbol"]+"@"+val["!LocusName"]+"|"+val["!Name"],
             "metaid": key.replace(" ", "_"),
         }
         fbc_gene_prod = etree.SubElement(
