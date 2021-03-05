@@ -150,3 +150,4 @@ class SBtable:
                 print("tsv import failed. Aborting...")
                 exit()
             # remove blank entries
+        self.unused = [h for h in self.headers if all(self.data[a].get(h) == "" for a in self.data)]

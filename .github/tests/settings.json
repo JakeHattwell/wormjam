@@ -2,6 +2,7 @@
     "pipeline": {
         "name": "WormJam",
         "organism": "Caenorhabditis elegans",
+        "info": "full",
         "short name": "C. elegans",
         "dbtable": true,
         "unit": {
