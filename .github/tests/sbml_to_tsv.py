@@ -127,130 +127,198 @@ DATE = datetime.datetime.now().date().isoformat()
 SBtabVersionString = "SBtabVersion='1.0'"
 SBtabHeaderTemplate = Template("!!SBtab TableID='$TableID' Document='%s' TableType='$TableType' TableName='$TableName' %s Date='%s'" % (NAME,SBtabVersionString,DATE))
 	
-# CURATORS
+# # CURATORS
 
-# try to find curators
-try:
-	curators = model.xpath(
-		".//vCard:vcards/vCard:vcard",
-		namespaces = nsmap
-		)
+# # try to find curators
+# try:
+# 	curators = model.xpath(
+# 		".//vCard:vcards/vCard:vcard",
+# 		namespaces = nsmap
+# 		)
 
-	# if curators were found
-	if len(curators):
-		# check what information is included in the SBML
+# 	# if curators were found
+# 	if len(curators):
+# 		# check what information is included in the SBML
 
-		SBtab_header = SBtabHeaderTemplate.substitute(TableID="curator",TableType="Curator",TableName="Curators")
-		headers = ["ID","!GivenName","!Surname","!Email","!OrganizationName"]
-		with open(OUTPUT_LOCATION/"Curator-SBtab.tsv","w+",newline="") as f:
-			curator_tsv = csv.writer(f,delimiter="\t")
-			curator_tsv.writerow([SBtab_header])
-			curator_tsv.writerow(headers)
-			for vCard in curators:
-				curator_tsv.writerow([
-					vCard.attrib["{%s}about" % nsmap["rdf"]],
-					vCard.xpath(".//vCard:given",namespaces=nsmap)[0].text,
-					vCard.xpath(".//vCard:surname",namespaces=nsmap)[0].text,
-					vCard.xpath(".//vCard:email",namespaces=nsmap)[0].text,
-					vCard.xpath(".//vCard:org",namespaces=nsmap)[0].text
-				])
-		print("COMPLETE: Curators")
-	else:
-		print("SKIPPED: No curators found")
-except Exception as e:
-	sys.exit("ERROR: Processing Compartments\n"+str(e))
+# 		SBtab_header = SBtabHeaderTemplate.substitute(TableID="curator",TableType="Curator",TableName="Curators")
+# 		headers = ["ID","!GivenName","!Surname","!Email","!OrganizationName"]
+# 		with open(OUTPUT_LOCATION/"Curator-SBtab.tsv","w+",newline="") as f:
+# 			curator_tsv = csv.writer(f,delimiter="\t")
+# 			curator_tsv.writerow([SBtab_header])
+# 			curator_tsv.writerow(headers)
+# 			for vCard in curators:
+# 				curator_tsv.writerow([
+# 					vCard.attrib["{%s}about" % nsmap["rdf"]],
+# 					vCard.xpath(".//vCard:given",namespaces=nsmap)[0].text,
+# 					vCard.xpath(".//vCard:surname",namespaces=nsmap)[0].text,
+# 					vCard.xpath(".//vCard:email",namespaces=nsmap)[0].text,
+# 					vCard.xpath(".//vCard:org",namespaces=nsmap)[0].text
+# 				])
+# 		print("COMPLETE: Curators")
+# 	else:
+# 		print("SKIPPED: No curators found")
+# except Exception as e:
+# 	sys.exit("ERROR: Processing Compartments\n"+str(e))
 
-# GENES
-try:
-	genes = model.xpath(".//fbc:listOfGeneProducts",namespaces=nsmap)[0]
-	if len(genes):
-		SBtab_header = SBtabHeaderTemplate.substitute(TableID="compound",TableType="Gene",TableName="Genes")
-		dbs = generate_headers(genes)
-		headers = ["!ID","!Symbol","!LocusName","!Name"] + dbs + ["!Curator","!Comments"]
-		with open(OUTPUT_LOCATION/"Gene-SBtab.tsv","w+",newline="") as f:
-			gene_tsv = csv.writer(f,delimiter="\t")
-			gene_tsv.writerow([SBtab_header])
-			gene_tsv.writerow(headers)
-			children = genes.xpath("./*[not(self::sbml:notes)]",namespaces=nsmap)
-			for gene in children:
-				data = [
-					gene.attrib["metaid"],
-					gene.attrib["{%s}name"%nsmap["fbc"]].split("@")[0],
-					gene.attrib["{%s}name"%nsmap["fbc"]].split("@")[1].split("|")[0],
-					gene.attrib["{%s}name"%nsmap["fbc"]].split("|")[1]
-					]
-				data.extend(pull_db_refs_from_sbml(dbs,gene))
-				gene_tsv.writerow(data)
-	print("COMPLETE: Genes")
-except Exception as e:
-	sys.exit("ERROR: Processing Genes\n"+str(e))
+# # GENES
+# try:
+# 	genes = model.xpath(".//fbc:listOfGeneProducts",namespaces=nsmap)[0]
+# 	if len(genes):
+# 		SBtab_header = SBtabHeaderTemplate.substitute(TableID="compound",TableType="Gene",TableName="Genes")
+# 		dbs = generate_headers(genes)
+# 		headers = ["!ID","!Symbol","!LocusName","!Name"] + dbs + ["!Curator","!Comments"]
+# 		with open(OUTPUT_LOCATION/"Gene-SBtab.tsv","w+",newline="") as f:
+# 			gene_tsv = csv.writer(f,delimiter="\t")
+# 			gene_tsv.writerow([SBtab_header])
+# 			gene_tsv.writerow(headers)
+# 			children = genes.xpath("./*[not(self::sbml:notes)]",namespaces=nsmap)
+# 			for gene in children:
+# 				data = [
+# 					gene.attrib["metaid"],
+# 					gene.attrib["{%s}name"%nsmap["fbc"]].split("@")[0],
+# 					gene.attrib["{%s}name"%nsmap["fbc"]].split("@")[1].split("|")[0],
+# 					gene.attrib["{%s}name"%nsmap["fbc"]].split("|")[1]
+# 					]
+# 				data.extend(pull_db_refs_from_sbml(dbs,gene))
+# 				gene_tsv.writerow(data)
+# 	print("COMPLETE: Genes")
+# except Exception as e:
+# 	sys.exit("ERROR: Processing Genes\n"+str(e))
 
+# # PATHWAYS
+# try:
+# 	pathways = model.xpath(".//groups:listOfGroups",namespaces=nsmap)[0]
+# 	if len(pathways):
+# 		SBtab_header = SBtabHeaderTemplate.substitute(TableID="pathway",TableType="Pathway",TableName="Pathways")
+# 		dbs = generate_headers(pathways)
+# 		headers = ["ID"] + dbs + ["!Curator","!Comments"]
+# 		with open(OUTPUT_LOCATION/"Pathway-SBtab.tsv","w+",newline="") as f:
+# 			pathway_tsv = csv.writer(f,delimiter="\t")
+# 			pathway_tsv.writerow([SBtab_header])
+# 			pathway_tsv.writerow(headers)
+# 			children = pathways.xpath("./*[not(self::sbml:notes)]",namespaces=nsmap)
+# 			for pathway in children:
+# 				data = [
+# 					pathway.attrib["metaid"]]
+# 				data.extend(pull_db_refs_from_sbml(dbs,pathway))
+# 				pathway_tsv.writerow(data)
+# 	print("COMPLETE: Pathways")
+# except Exception as e:
+# 	sys.exit("ERROR: Processing Pathways\n"+str(e))
+# # COMPARTMENTS
 
-# COMPARTMENTS
+# try:
+# 	compartments = model.xpath(".//sbml:listOfCompartments",namespaces=nsmap)[0]
+# 	if len(compartments):
+# 		SBtab_header = SBtabHeaderTemplate.substitute(TableID="compartment",TableType="Compartment",TableName="Compartments")
+# 		dbs = generate_headers(compartments)
+# 		headers = ["ID","!Name","!Size","!spatialDimensions"] + dbs + ["!Curator","!Comments"]
+# 		with open(OUTPUT_LOCATION/"Compartment-SBtab.tsv","w+",newline="") as f:
+# 			compartment_tsv = csv.writer(f,delimiter="\t")
+# 			compartment_tsv.writerow([SBtab_header])
+# 			compartment_tsv.writerow(headers)
+# 			children = compartments.xpath("./*[not(self::sbml:notes)]",namespaces=nsmap)
+# 			for compartment in children:
+# 				data = [
+# 					compartment.attrib["metaid"],
+# 					compartment.attrib["name"],
+# 					compartment.attrib["size"],
+# 					compartment.attrib["spatialDimensions"]]
+# 				data.extend(pull_db_refs_from_sbml(dbs,compartment))
+# 				compartment_tsv.writerow(data)
+# 	print("COMPLETE: Compartments")
+# except Exception as e:
+# 	traceback.print_exc(e)
+# 	sys.exit("ERROR: Processing Compartments\n"+str(e))
 
-try:
-	compartments = model.xpath(".//sbml:listOfCompartments",namespaces=nsmap)[0]
-	if len(compartments):
-		SBtab_header = SBtabHeaderTemplate.substitute(TableID="compartment",TableType="Compartment",TableName="Compartments")
-		dbs = generate_headers(compartments)
-		headers = ["ID","!Name","!Size","!spatialDimensions"] + dbs + ["!Curator","!Comments"]
-		with open(OUTPUT_LOCATION/"Compartment-SBtab.tsv","w+",newline="") as f:
-			compartment_tsv = csv.writer(f,delimiter="\t")
-			compartment_tsv.writerow([SBtab_header])
-			compartment_tsv.writerow(headers)
-			children = compartments.xpath("./*[not(self::sbml:notes)]",namespaces=nsmap)
-			for compartment in children:
-				data = [
-					compartment.attrib["metaid"],
-					compartment.attrib["name"],
-					compartment.attrib["size"],
-					compartment.attrib["spatialDimensions"]]
-				data.extend(pull_db_refs_from_sbml(dbs,compartment))
-				compartment_tsv.writerow(data)
-	print("COMPLETE: Compartments")
-except Exception as e:
-	traceback.print_exc(e)
-	sys.exit("ERROR: Processing Compartments\n"+str(e))
+# # COMPOUND
+# try:
+# 	compounds = model.xpath(".//sbml:listOfSpecies",namespaces=nsmap)[0]
+# 	if len(compounds):
+# 		SBtab_header = SBtabHeaderTemplate.substitute(TableID="compound",TableType="Compound",TableName="Compounds")
+# 		dbs = generate_headers(compounds)
+# 		headers = ["!ID","!Name","!Location","!Charge","!Formula","!IsConstant","!SBOTerm","!InitialConcentration","!hasOnlySubstanceUnits"] + dbs + ["!Curator","!Comments"]
+# 		with open(OUTPUT_LOCATION/"Compound-SBtab.tsv","w+",newline="") as f:
+# 			compound_tsv = csv.writer(f,delimiter="\t")
+# 			compound_tsv.writerow([SBtab_header])
+# 			compound_tsv.writerow(headers)
+# 			children = compounds.xpath("./*[not(self::sbml:notes)]",namespaces=nsmap)
+# 			for species in children:
+# 				data = [
+# 					species.attrib["metaid"],
+# 					species.attrib["name"],
+# 					species.attrib["compartment"],
+# 					species.attrib["{%s}charge"%nsmap["fbc"]],
+# 					species.attrib["{%s}chemicalFormula"%nsmap["fbc"]],
+# 					species.attrib["constant"],
+# 					species.attrib.get("sboTerm",""),
+# 					species.attrib["initialConcentration"],
+# 					species.attrib["hasOnlySubstanceUnits"]
+# 					]
+# 				data.extend(pull_db_refs_from_sbml(dbs,species))
+# 				compound_tsv.writerow(data)
+# 	print("COMPLETE: Compounds")
+# except Exception as e:
+# 	sys.exit("ERROR: Processing Compounds\n"+str(e))
 
-# COMPOUND
-try:
-	compounds = model.xpath(".//sbml:listOfSpecies",namespaces=nsmap)[0]
-	if len(compounds):
-		SBtab_header = SBtabHeaderTemplate.substitute(TableID="compound",TableType="Compound",TableName="Compounds")
-		dbs = generate_headers(compounds)
-		headers = ["!ID","!Name","!Location","!Charge","!Formula","!IsConstant","!SBOTerm","!InitialConcentration","!hasOnlySubstanceUnits"] + dbs + ["!Curator","!Comments"]
-		with open(OUTPUT_LOCATION/"Compound-SBtab.tsv","w+",newline="") as f:
-			compound_tsv = csv.writer(f,delimiter="\t")
-			compound_tsv.writerow([SBtab_header])
-			compound_tsv.writerow(headers)
-			children = compounds.xpath("./*[not(self::sbml:notes)]",namespaces=nsmap)
-			for species in children:
-				data = [
-					species.attrib["metaid"],
-					species.attrib["name"],
-					species.attrib["compartment"],
-					species.attrib["{%s}charge"%nsmap["fbc"]],
-					species.attrib["{%s}chemicalFormula"%nsmap["fbc"]],
-					species.attrib["constant"],
-					species.attrib["sboTerm"],
-					species.attrib["initialConcentration"],
-					species.attrib["hasOnlySubstanceUnits"]
-					]
-				data.extend(pull_db_refs_from_sbml(dbs,species))
-				compound_tsv.writerow(data)
-	print("COMPLETE: Compounds")
-except Exception as e:
-	sys.exit("ERROR: Processing Compounds\n"+str(e))
+# # PARAMETERS
 
+# try:
+# 	parameters = model.xpath(".//sbml:listOfParameters",namespaces=nsmap)[0]
+# 	if len(parameters):
+# 		SBtab_header = SBtabHeaderTemplate.substitute(TableID="parameter",TableType="Parameter",TableName="Parameters")
+# 		dbs = generate_headers(parameters)
+# 		headers = ["!ID","!Parameter","!Value","!Unit","!Type","!SBOTerm"] + dbs + ["!Curator","!Comments"]
+# 		with open(OUTPUT_LOCATION/"Parameter-SBtab.tsv","w+",newline="") as f:
+# 			parameter_tsv = csv.writer(f,delimiter="\t")
+# 			parameter_tsv.writerow([SBtab_header])
+# 			parameter_tsv.writerow(headers)
+# 			children = parameters.xpath("./*[not(self::sbml:notes)]",namespaces=nsmap)
+# 			for parameter in children:
+# 				data = [
+# 					parameter.attrib["id"],
+# 					parameter.attrib["id"],
+# 					parameter.attrib["value"],
+# 					"", #Unit is blank normally
+# 					"global parameter",
+# 					parameter.attrib.get("sboTerm","")
+# 					]
+# 				data.extend(pull_db_refs_from_sbml(dbs,parameter))
+# 				parameter_tsv.writerow(data)
+# 	print("COMPLETE: Parameters")
+# except Exception as e:
+# 	sys.exit("ERROR: Processing Parameters\n"+str(e))
 
-# compound = model.xpath(".//sbml:listOfSpecies",namespaces=nsmap)
-# a = generate_headers(compound[0])
-# b = "!ID	!Name	!Location	!Charge	!Formula	!Identifiers:chebi	!Identifiers:pubmed.compound	!Identifiers:doi	!Identifiers:eco	!Comment	!Curator	!Notes:Old_ID	!Identifiers:inchi	!Identifiers:inchikey	!Notes:SMILES	!Notes:Name_neutral	!Notes:Formula_Neutral	!Notes:InChI_neutral	!Notes:InChIKey_neutral	!Notes:SMILES_neutral	!Notes:ChEBI_neutral	!Identifiers:kegg.compound	!Identifiers:biocyc	!Identifiers:hmbd	!Notes:LipidMaps_neutral	!Notes:SwissLipids_neutral	!Notes:Wikidata_neutral	!Notes:Pubchem_neutral	!Notes:Metabolights_neutral	!Notes:Chemspider_neutral	!Identifiers:bigg.metabolite	!Identifiers:metanetx.compound	!Identifiers:reactome	!Identifiers:seed.compound".split("\t")
-# print(b)
-# print()
-# print(a)
-# print()
-# print([i for i in b if i not in a])
-# print()
-# print([i for i in a if i not in b])
-# print()
+# REACTION
+# try:
+reactions = model.xpath(".//sbml:listOfReactions",namespaces=nsmap)[0]
+children = reactions.xpath("./*[not(self::sbml:notes)]",namespaces=nsmap)
+r1 = [r for r in children if r.attrib["metaid"] == "R_RMC0106"][0]
+print(etree.tostring(r1).decode('utf-8'))
+
+	# if len(reactions):
+	# 	SBtab_header = SBtabHeaderTemplate.substitute(TableID="reaction",TableType="Reaction",TableName="Reactions")
+	# 	dbs = generate_headers(reactions)
+	# 	headers = ["!ID","!Name","!Location","!Charge","!Formula","!IsConstant","!SBOTerm","!InitialConcentration","!hasOnlySubstanceUnits"] + dbs + ["!Curator","!Comments"]
+	# 	with open(OUTPUT_LOCATION/"Reaction-SBtab.tsv","w+",newline="") as f:
+	# 		reaction_tsv = csv.writer(f,delimiter="\t")
+	# 		reaction_tsv.writerow([SBtab_header])
+	# 		reaction_tsv.writerow(headers)
+	# 		children = reactions.xpath("./*[not(self::sbml:notes)]",namespaces=nsmap)
+	# 		for r in children:
+	# 			data = [
+	# 				r.attrib["metaid"],
+	# 				r.attrib["name"],
+	# 				r.attrib["compartment"],
+	# 				r.attrib["{%s}charge"%nsmap["fbc"]],
+	# 				r.attrib["{%s}chemicalFormula"%nsmap["fbc"]],
+	# 				r.attrib["constant"],
+	# 				r.attrib.get("sboTerm",""),
+	# 				r.attrib["initialConcentration"],
+	# 				r.attrib["hasOnlySubstanceUnits"]
+	# 				]
+	# 			data.extend(pull_db_refs_from_sbml(dbs,r))
+	# 			reaction_tsv.writerow(data)
+	# print("COMPLETE: Reactions")
+# except Exception as e:
+# 	sys.exit("ERROR: Processing Reactions\n"+str(e))

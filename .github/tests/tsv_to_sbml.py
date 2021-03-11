@@ -206,6 +206,15 @@ for key, val in compiler.tables.get("Gene").data.items():
         fbc_gene_prod.append(
             gen_annotation_tree(attribs["metaid"], db_dict, val, NS_MAP)
         )
+        notes = etree.SubElement(
+            etree.SubElement(fbc_gene_prod, "notes"), "{%s}" % NS_MAP["xhtml"] + "body"
+        )
+        for i in  list(val.keys()):
+            if ("!Notes" in i or i in ["!Curator","!Comment"]) and val[i] != 0:
+                etree.SubElement(notes, "{%s}" % NS_MAP["xhtml"] + "p").text = (
+                    i.replace("!", "").replace("Notes:", "")+ ": " + val[i]
+                )
+    
 unused = compiler.tables.get("Gene").unused
 if len(unused):
     notes_body = etree.SubElement(model_listOfGeneProducts,"notes")
@@ -247,6 +256,14 @@ for key, val in compiler.tables.get("Pathway").data.items():
                 "{%s}" % NS_MAP["groups"] + "idRef": i,
             },
         )
+    notes = etree.SubElement(
+    etree.SubElement(groups_group, "notes"), "{%s}" % NS_MAP["xhtml"] + "body"
+    )
+    for i in  list(val.keys()):
+        if ("!Notes" in i or i in ["!Curator","!Comment"]) and val[i] != 0:
+            etree.SubElement(notes, "{%s}" % NS_MAP["xhtml"] + "p").text = (
+                i.replace("!", "").replace("Notes:", "")+ ": " + val[i]
+            )
 unused = compiler.tables.get("Pathway").unused
 if len(unused):
     notes_body = etree.SubElement(model_listOfGroups,"notes")
@@ -333,21 +350,38 @@ if len(unused):
 #
 
 parameter_tree = etree.SubElement(model, "listOfParameters")
-etree.SubElement(
-    parameter_tree,
-    "parameter",
-    attrib={"constant": "true", "id": "LOWER_BOUND", "value": "-1000"},
-)
-etree.SubElement(
-    parameter_tree,
-    "parameter",
-    attrib={"constant": "true", "id": "ZERO_BOUND", "value": "0"},
-)
-etree.SubElement(
-    parameter_tree,
-    "parameter",
-    attrib={"constant": "true", "id": "UPPER_BOUND", "value": "1000"},
-)
+
+if p_info := compiler.tables.get("Parameter",False):
+    for key,val in p_info.data.items():
+        etree.SubElement(
+        parameter_tree,
+        "parameter",
+        attrib={"constant": "true", "id": key, "value": val["!Value"],"sboTerm": val["!SBOTerm"]},
+    )
+    notes_body = etree.SubElement(
+    etree.SubElement(parameter_tree, "notes"), "{%s}" % NS_MAP["xhtml"] + "body"
+    )
+    for i in  list(val.keys()):
+        if ("!Notes" in i or i in ["!Curator","!Comment"]) and val[i] != 0:
+            etree.SubElement(notes_body, "{%s}" % NS_MAP["xhtml"] + "p").text = (
+                i.replace("!", "").replace("Notes:", "")+ ": " + val[i]
+            )
+else:
+    etree.SubElement(
+        parameter_tree,
+        "parameter",
+        attrib={"constant": "true", "id": "LOWER_BOUND", "value": "-1000"},
+    )
+    etree.SubElement(
+        parameter_tree,
+        "parameter",
+        attrib={"constant": "true", "id": "ZERO_BOUND", "value": "0"},
+    )
+    etree.SubElement(
+        parameter_tree,
+        "parameter",
+        attrib={"constant": "true", "id": "UPPER_BOUND", "value": "1000"},
+    )
 
 #
 # Reactions
