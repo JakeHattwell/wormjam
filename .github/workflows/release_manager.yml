@@ -23,9 +23,9 @@ jobs:
         pip install -r requirements.txt
     - name: Build Model
       run: |
-        python .github/tests/tsv_to_sbml.py
+        python .github/contingemc/tsv_to_sbml.py
     - name: Report to Discord server
       run: |
         tar -czvf WormJam.tar.gz WormJam.xml
-        python .github/tests/release_manager.py "$DISCORD_WEBHOOK_RELEASE" $GITHUB_REPOSITORY $GITHUB_REF
+        python .github/contingemc/release_manager.py "$DISCORD_WEBHOOK_RELEASE" $GITHUB_REPOSITORY $GITHUB_REF
 
