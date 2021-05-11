@@ -10,7 +10,7 @@ meta = data["meta"]
 tests = data["tests"]
 meta_html = json2html.convert(json=meta)
 test_keys = list(tests.keys())
-settings_path = Path(".github") / "tests" / "settings.json"
+settings_path = Path(".github") / "contingemc" / "settings.json"
 settings = json.load(open(settings_path, "r"))["pipeline"]
 
 ###Templates

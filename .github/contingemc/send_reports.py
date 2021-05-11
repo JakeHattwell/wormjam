@@ -7,7 +7,7 @@ import datetime
 from pathlib import Path
 from support.helper_classes import ModelConfig
 
-settings_path = Path(".github") / "tests" / "config.yml"
+settings_path = Path(".github") / "contingemc" / "config.yml"
 settings = ModelConfig(settings_path)
 
 DISCORD_ENDPOINT = sys.argv[1]  # Github Actions Channel Webhook

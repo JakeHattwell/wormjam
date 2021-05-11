@@ -3,7 +3,7 @@ import cobra
 from pathlib import Path
 from support.helper_classes import ModelConfig
 
-settings_path = Path(".github") / "tests" / "config.yml"
+settings_path = Path(".github") / "contingemc" / "config.yml"
 settings = ModelConfig(settings_path)
 
 model = cobra.io.read_sbml_model(f"{settings.name}.xml")
