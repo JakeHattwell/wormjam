@@ -43,7 +43,7 @@ CLEAN_DELETION = False
 
 print("Build model is set to", BUILD)
 
-settings_path = Path(".github") / "tests" / "config.yml"
+settings_path = Path(".github") / "contingemc" / "config.yml"
 settings = ModelConfig(settings_path)
 
 model_name = settings.name

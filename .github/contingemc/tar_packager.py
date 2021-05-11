@@ -3,7 +3,7 @@ import subprocess
 from pathlib import Path
 from support.helper_classes import ModelConfig
 
-settings_path = Path(".github") / "tests" / "config.yml"
+settings_path = Path(".github") / "contingemc" / "config.yml"
 settings = ModelConfig(settings_path)
 
 timestamp = datetime.datetime.now().isoformat(timespec="minutes").replace(":", "-")
